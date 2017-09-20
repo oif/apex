@@ -9,8 +9,8 @@ Apex is a DNS server written in Go, help you connect to the real Internet.
 * Cache
 * edns-client-subnet
 * Multiple DNS upstream
-    * DNS Over TLS (Google DNS)
-    * UDP and TCP DNS
+    * DNS Over TLS
+    * UDP/TCP DNS
 * Hosts
 
 # License
