@@ -1,12 +1,15 @@
 language: go
 go:
   - 1.8.x
+
 env:
-  - "PATH=/home/travis/gopath/bin:$PATH"
+  global:
+  - PATH=$GOROOT/bin:$PATH
+  - GO15VENDOREXPERIMENT=1
+
 before_install:
-  - go get github.com/axw/gocov/gocov
+  - go get github.com/modocache/gover
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 script:
-  - go test -v -covermode=count -coverprofile=coverage.out ./...
-  - goveralls -coverprofile=coverage.out -service travis-ci -repotoken $COVERALLS_TOKEN
+  - bash -x hack/test.sh
