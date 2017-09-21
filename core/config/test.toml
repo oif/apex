@@ -1,0 +1,8 @@
+ListenAddress=":53"
+
+[Upstream]
+[[PrimaryDNS]]
+Name="DNSPod"
+Address="119.29.29.29"
+Protocol="udp"
+EnableProxy=false
