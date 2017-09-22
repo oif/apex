@@ -9,6 +9,8 @@ type Proxy struct {
 }
 
 const (
+	// ProxyDisablePolicy never use proxy
+	ProxyDisablePolicy = "disable"
 	// ProxyActivePolicy use proxy always
 	ProxyActivePolicy = "active"
 	// ProxyPassivePolicy use in need

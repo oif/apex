@@ -21,7 +21,7 @@ FMT=$FORMATTABLE
 echo "Running tests with coverage profile generation..."
 i=0
 for t in ${TEST}; do
-    runtest "-coverprofile ${i}.coverprofile ${t}"
+    runtest "-coverprofile ${i}.coverprofile.test ${t}"
     i=$((i+1))
 done
 gover
