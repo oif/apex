@@ -42,6 +42,18 @@ type Hosts struct {
 	Address        string
 }
 
+// NewConfig return
+func NewConfig() *Config {
+	return &Config{
+		Upstream: new(Upstream),
+		Proxy: &Proxy{
+			Policy: types.ProxyDisablePolicy,
+		},
+		Cache: new(Cache),
+		Hosts: new(Hosts),
+	}
+}
+
 // Load config from file
 func (c *Config) Load(filename string) *Config {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
@@ -55,16 +67,24 @@ func (c *Config) Load(filename string) *Config {
 
 // Check values in config
 func (c *Config) Check() {
-	c.Upstream.Check()
-	c.Proxy.Check()
-	c.Cache.Check()
-	c.Hosts.Check()
+	if c.Upstream != nil {
+		c.Upstream.Check()
+	}
+	if c.Proxy != nil {
+		c.Proxy.Check()
+	}
+	if c.Cache != nil {
+		c.Cache.Check()
+	}
+	if c.Hosts != nil {
+		c.Hosts.Check()
+	}
 }
 
 // Check upstream config
 func (u *Upstream) Check() {
 	if len(u.PrimaryDNS) == 0 && len(u.AlternativeDNS) == 0 {
-		panic(fmt.Sprintf("Primary DNS and Alternative DNS could not be empty both"))
+		panic(fmt.Sprintf("Primary DNS and Alternative DNS could not be empty both, Primary DNS %d, Alternative DNS %d", len(u.PrimaryDNS), len(u.AlternativeDNS)))
 	}
 	for i := 0; i < len(u.PrimaryDNS); i++ {
 		if err := u.PrimaryDNS[i].Check(); err != nil {
@@ -80,11 +100,16 @@ func (u *Upstream) Check() {
 
 // Check proxy config
 func (p *Proxy) Check() {
-	if p.Policy != types.ProxyActivePolicy && p.Policy != types.ProxyPassivePolicy {
+	if p.Policy != types.ProxyActivePolicy && p.Policy != types.ProxyPassivePolicy && p.Policy != types.ProxyDisablePolicy {
 		panic(fmt.Sprintf("Invalid proxy policy: %s", p.Policy))
 	}
-	if err := p.Proxy.Check(); err != nil {
-		panic(fmt.Sprintf("Invalid proxy : %s", err))
+	if p.Policy != types.ProxyDisablePolicy {
+		if p.Proxy == nil {
+			panic(fmt.Sprintf("Use %s proxy policy but did not set proxy", p.Policy))
+		}
+		if err := p.Proxy.Check(); err != nil {
+			panic(fmt.Sprintf("Invalid proxy : %s", err))
+		}
 	}
 }
 

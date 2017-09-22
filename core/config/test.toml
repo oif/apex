@@ -1,8 +1,28 @@
 ListenAddress=":53"
 
 [Upstream]
-[[PrimaryDNS]]
-Name="DNSPod"
-Address="119.29.29.29"
-Protocol="udp"
-EnableProxy=false
+    [[Upstream.PrimaryDNS]]
+    Name="DNSPod"
+    Address="119.29.29.29"
+    Protocol="udp"
+    EnableProxy=false
+    [[Upstream.AlternativeDNS]]
+    Name="AliDNS"
+    Address="223.5.5.5"
+    Protocol="udp"
+    EnableProxy=false
+
+[Proxy]
+Policy="passive"
+    [Proxy.Proxy]
+    Protocol="http"
+    Address="127.0.0.1:1080"
+
+[Cache]
+Enable=true
+Size=666
+
+[Hosts]
+Enable=true
+UpdateInterval=86400
+Address="https://line.cat/hosts"
