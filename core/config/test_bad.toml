@@ -1,0 +1,13 @@
+ListenAddress=":53"
+
+[Upstream]
+    [[Upstream.PrimaryDNS]]
+    Name="DNSPod"
+    Address="119.29.29.29"
+    Protocol="udp"
+    EnableProxy=false
+    [[Upstream.AlternativeDNS
+    Name="AliDNS"
+    Address="223.5.5.5"
+    Protocol="udp"
+    EnableProxy=false
