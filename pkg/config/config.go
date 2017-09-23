@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/oif/apex/core/types"
+	"github.com/oif/apex/pkg/types"
 )
 
 // Config groups
