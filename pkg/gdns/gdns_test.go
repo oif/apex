@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 
@@ -12,20 +13,37 @@ import (
 )
 
 func initClient() {
-	proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
+	isTravis := os.Getenv("TRAVIS")
 
-	HTTPClient = &http.Client{
-		Timeout: 2 * time.Second,
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyAddr),
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ResponseHeaderTimeout: 10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-		},
+	if isTravis == "true" {
+		HTTPClient = &http.Client{
+			Timeout: 2 * time.Second,
+			Transport: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+				TLSHandshakeTimeout:   10 * time.Second,
+				ResponseHeaderTimeout: 10 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}
+	} else {
+		proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
+
+		HTTPClient = &http.Client{
+			Timeout: 2 * time.Second,
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(proxyAddr),
+				Dial: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+				TLSHandshakeTimeout:   10 * time.Second,
+				ResponseHeaderTimeout: 10 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}
 	}
 }
 
