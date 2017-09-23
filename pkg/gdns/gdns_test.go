@@ -29,8 +29,16 @@ func initClient() {
 }
 
 func TestGoogleDNS(t *testing.T) {
-	initClient()
 	request := &ResolveRequest{
+		Name:             "asd",
+		EDNSClientSubnet: "8.8.0.0/16",
+	}
+	_, _, err := request.Request()
+	assert.Error(t, err, "Invalid resolve name")
+	assert.Equal(t, dns.TypeA, request.Type, "Default rr type A")
+
+	initClient()
+	request = &ResolveRequest{
 		Name:             "example.com",
 		Type:             dns.TypeA,
 		CheckingDisabled: true,
