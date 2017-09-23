@@ -3,7 +3,6 @@ package gdns
 import (
 	"net"
 	"net/http"
-	"net/url"
 	"testing"
 	"time"
 
@@ -12,12 +11,12 @@ import (
 )
 
 func initClient() {
-	proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
+	// proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
 
 	HTTPClient = &http.Client{
 		Timeout: 2 * time.Second,
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyAddr),
+			// Proxy: http.ProxyURL(proxyAddr),
 			Dial: (&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
