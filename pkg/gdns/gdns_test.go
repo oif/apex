@@ -3,6 +3,7 @@ package gdns
 import (
 	"net"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
@@ -11,12 +12,12 @@ import (
 )
 
 func initClient() {
-	// proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
+	proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
 
 	HTTPClient = &http.Client{
 		Timeout: 2 * time.Second,
 		Transport: &http.Transport{
-			// Proxy: http.ProxyURL(proxyAddr),
+			Proxy: http.ProxyURL(proxyAddr),
 			Dial: (&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
@@ -35,7 +36,6 @@ func TestGoogleDNS(t *testing.T) {
 	}
 	_, _, err := request.Request()
 	assert.Error(t, err, "Invalid resolve name")
-	assert.Equal(t, dns.TypeA, request.Type, "Default rr type A")
 
 	initClient()
 	request = &ResolveRequest{
@@ -46,6 +46,7 @@ func TestGoogleDNS(t *testing.T) {
 	resp, statusCode, err := request.Request()
 	assert.NoError(t, err, "Should have no any error")
 	assert.Equal(t, 200, statusCode, "Response status code should be 200 but %d get", statusCode)
+	assert.Equal(t, dns.TypeA, request.Type, "Default rr type A")
 	// end resolve test
 
 	// start test resolve response
