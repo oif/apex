@@ -48,10 +48,7 @@ func initClient() {
 }
 
 func TestGoogleDNS(t *testing.T) {
-	request := &ResolveRequest{
-		Name:             "asd",
-		EDNSClientSubnet: "8.8.0.0/16",
-	}
+	request := &ResolveRequest{}
 	_, _, err := request.Request()
 	assert.Error(t, err, "Invalid resolve name")
 
