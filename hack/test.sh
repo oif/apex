@@ -13,7 +13,7 @@ export PATH=$GOROOT/bin:$PATH
 export GO15VENDOREXPERIMENT=1
 
 function runtest {
-    bash -c "go test -covermode set $@"
+    sudo -E bash -c "umask 0; PATH=$GOROOT/bin:$(pwd)/bin:$PATH go test -covermode set $@"
 }
 
 TESTABLE="$(go list ./... | grep -v vendor | xargs echo)"
