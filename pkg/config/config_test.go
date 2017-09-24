@@ -16,6 +16,10 @@ func TestLoadConfig(t *testing.T) {
 	assert.Equal(t, DefaultListenProtocol, config.ListenProtocol, "Set default listen protocol where ListenProtocol is empty in config")
 
 	config = NewConfig()
+	config.ListenProtocol = "http"
+	assert.Panics(t, func() { config.Check() }, "Panic due to invalid listen protocol")
+
+	config = NewConfig()
 	assert.Panics(t, func() {
 		config.Load("no_exists.toml")
 	}, "Should panic due to file not exists")
