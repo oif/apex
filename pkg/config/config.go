@@ -8,13 +8,25 @@ import (
 	"github.com/oif/apex/pkg/types"
 )
 
+const (
+	// DefaultListenAddress set :53
+	DefaultListenAddress = ":53"
+	// DefaultListenProtocol udp
+	DefaultListenProtocol = ProtocolUDP
+	// ProtocolUDP constant
+	ProtocolUDP = "udp"
+	// ProtocolTCP constant
+	ProtocolTCP = "tcp"
+)
+
 // Config groups
 type Config struct {
-	ListenAddress string
-	Upstream      *Upstream
-	Proxy         *Proxy
-	Cache         *Cache
-	Hosts         *Hosts
+	ListenAddress  string // default listen at :dns
+	ListenProtocol string // udp tcp only, default udp
+	Upstream       *Upstream
+	Proxy          *Proxy
+	Cache          *Cache
+	Hosts          *Hosts
 }
 
 // Upstream config
@@ -67,6 +79,17 @@ func (c *Config) Load(filename string) *Config {
 
 // Check values in config
 func (c *Config) Check() {
+	if c.ListenAddress == "" {
+		c.ListenAddress = DefaultListenAddress
+	}
+	if c.ListenProtocol == "" {
+		c.ListenProtocol = DefaultListenProtocol
+	} else {
+		if c.ListenProtocol != ProtocolTCP && c.ListenProtocol != ProtocolUDP {
+			panic(fmt.Sprintf("Unsupport DNS server listen protocol: %s", c.ListenProtocol))
+		}
+	}
+
 	if c.Upstream != nil {
 		c.Upstream.Check()
 	}

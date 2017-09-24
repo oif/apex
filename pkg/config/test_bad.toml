@@ -1,4 +1,5 @@
 ListenAddress=":53"
+Protocol="http"
 
 [Upstream]
     [[Upstream.PrimaryDNS]]
