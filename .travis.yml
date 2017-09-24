@@ -13,4 +13,4 @@ before_install:
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
 script:
-  - sudo -E bash -x hack/test.sh
+  - sudo -E bash hack/test.sh

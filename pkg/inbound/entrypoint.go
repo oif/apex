@@ -18,11 +18,11 @@ func (e *Entrypoint) hasError() error {
 	if e == nil {
 		return errors.New("this entrypoint is nil")
 	}
-	if e.Server == nil {
-		return errors.New("dns server did not initialize, plz user Setup func")
-	}
 	if e.err != nil {
 		return e.err
+	}
+	if e.Server == nil {
+		return errors.New("dns server did not initialize, plz user Setup func")
 	}
 	return nil
 }
@@ -33,11 +33,12 @@ func (e *Entrypoint) Setup(server *dns.Server) *Entrypoint {
 		e.err = errors.New("DNS server is required")
 		return e
 	}
-	e.Server = server
 	if e.HandleFunc == nil {
 		e.err = errors.New("handle func cloud not be nil")
 		return e
 	}
+
+	e.Server = server
 	dns.HandleFunc(".", e.HandleFunc)
 	return e
 }
