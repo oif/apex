@@ -52,6 +52,11 @@ func TestGoogleDNS(t *testing.T) {
 	_, _, err := request.Request()
 	assert.Error(t, err, "Invalid resolve name")
 
+	request.Name = "google.com"
+	request.Type = dns.TypeNone
+	request.Request()
+	assert.Equal(t, dns.TypeANY, request.Type, "Default rr type ANY")
+
 	initClient()
 	request = &ResolveRequest{
 		Name:             "example.com",
@@ -61,7 +66,6 @@ func TestGoogleDNS(t *testing.T) {
 	resp, statusCode, err := request.Request()
 	assert.NoError(t, err, "Should have no any error")
 	assert.Equal(t, 200, statusCode, "Response status code should be 200 but %d get", statusCode)
-	assert.Equal(t, dns.TypeANY, request.Type, "Default rr type ANY")
 	// end resolve test
 
 	// start test resolve response
