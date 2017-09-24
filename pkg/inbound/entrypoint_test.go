@@ -2,6 +2,7 @@ package inbound
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/miekg/dns"
@@ -16,5 +17,8 @@ func TestEntrypoint(t *testing.T) {
 	entrypoint.Setup(&dns.Server{
 		Addr: ":53",
 		Net:  "udp",
-	}).Serve()
+	})
+	if os.Getenv("TRAVIS") != "true" {
+		entrypoint.Serve()
+	}
 }
