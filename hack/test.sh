@@ -9,6 +9,9 @@
 #
 set -e
 
+export PATH=$GOROOT/bin:$PATH
+export GO15VENDOREXPERIMENT=1
+
 function runtest {
     bash -c "go test -covermode set $@"
 }
