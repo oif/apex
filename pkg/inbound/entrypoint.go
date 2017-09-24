@@ -13,7 +13,6 @@ type Entrypoint struct {
 
 // Setup DNS server with config
 func (e *Entrypoint) Setup(c *config.Config, handleFunc func(dns.ResponseWriter, *dns.Msg)) (err error) {
-	// @TEST
 	e.Server = &dns.Server{
 		Addr: c.ListenAddress,
 		Net:  "udp",
@@ -34,5 +33,6 @@ func (e *Entrypoint) Serve() {
 
 // Shutdown entrypoint
 func (e *Entrypoint) Shutdown() error {
+	// Do other clean works, such as close all the conn to do a graceful-shutdown
 	return e.Server.Shutdown()
 }
