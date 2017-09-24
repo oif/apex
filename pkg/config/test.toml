@@ -1,5 +1,3 @@
-ListenAddress=":53"
-
 [Upstream]
     [[Upstream.PrimaryDNS]]
     Name="DNSPod"

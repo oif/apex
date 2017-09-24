@@ -12,6 +12,8 @@ func TestLoadConfig(t *testing.T) {
 	assert.NotPanics(t, func() {
 		config.Load("test.toml").Check()
 	}, "This test case should not panic")
+	assert.Equal(t, DefaultListenAddress, config.ListenAddress, "Set default listen address where ListenAddress is empty in config")
+	assert.Equal(t, DefaultListenProtocol, config.ListenProtocol, "Set default listen protocol where ListenProtocol is empty in config")
 
 	config = NewConfig()
 	assert.Panics(t, func() {
