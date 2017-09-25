@@ -21,8 +21,8 @@ const (
 
 // Config groups
 type Config struct {
-	ListenAddress  string // default listen at :dns
-	ListenProtocol string // udp tcp only, default udp
+	ListenAddress  string   // default listen at :dns
+	ListenProtocol []string // udp tcp only, default udp
 	Upstream       *Upstream
 	Proxy          *Proxy
 	Cache          *Cache
@@ -82,11 +82,13 @@ func (c *Config) Check() {
 	if c.ListenAddress == "" {
 		c.ListenAddress = DefaultListenAddress
 	}
-	if c.ListenProtocol == "" {
-		c.ListenProtocol = DefaultListenProtocol
+	if len(c.ListenProtocol) == 0 {
+		c.ListenProtocol = append(c.ListenProtocol, DefaultListenProtocol)
 	} else {
-		if c.ListenProtocol != ProtocolTCP && c.ListenProtocol != ProtocolUDP {
-			panic(fmt.Sprintf("Unsupport DNS server listen protocol: %s", c.ListenProtocol))
+		for _, protocol := range c.ListenProtocol {
+			if protocol != ProtocolTCP && protocol != ProtocolUDP {
+				panic(fmt.Sprintf("Unsupport DNS server listen protocol: %s", protocol))
+			}
 		}
 	}
 
