@@ -59,6 +59,9 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 
 // Stop the server graceful
 func (s *Server) Stop() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
 	// @TODO should have a graceful way to close dns server and clean up
 	log.Infoln("Graceful shutdown")
 	for _, srv := range s.srvs {
