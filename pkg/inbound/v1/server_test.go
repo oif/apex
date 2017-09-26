@@ -1,13 +1,16 @@
 package v1
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestServer(t *testing.T) {
-	// if os.Getenv("TRAVIS") != "TRUE" {
-	// 	s := &Server{
-	// 		ListenAddress:  ":53",
-	// 		ListenProtocol: []string{"udp", "tcp"},
-	// 	}
-	// 	s.Run()
-	// }
+	s := &Server{
+		ListenAddress:  ":53",
+		ListenProtocol: []string{"udp", "tcp"},
+	}
+	if os.Getenv("TRAVIS") != "true" {
+		s.Run()
+	}
 }
