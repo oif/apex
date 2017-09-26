@@ -12,8 +12,10 @@ type Server struct {
 	ListenAddress  string
 	ListenProtocol []string
 
-	mux *dns.ServeMux
-	wg  *sync.WaitGroup
+	mux  *dns.ServeMux
+	srvs []*dns.Server
+	lock sync.RWMutex
+	wg   *sync.WaitGroup
 }
 
 // Run server
@@ -22,7 +24,7 @@ func (s *Server) Run() {
 
 	s.mux = dns.NewServeMux()
 	log.Debugln("Setting DNS server handle")
-	s.mux.Handle(".", s.mux)
+	s.mux.Handle(".", s)
 
 	s.wg = new(sync.WaitGroup)
 	// Add wait group
@@ -31,7 +33,18 @@ func (s *Server) Run() {
 	for _, proto := range s.ListenProtocol {
 		log.Infof("Ready to serve at [%s]%s", proto, s.ListenAddress)
 		go func(network string) {
-			if err := dns.ListenAndServe(s.ListenAddress, network, s.mux); err != nil {
+			s.lock.Lock()
+			log.Debug("Server locked")
+			srv := &dns.Server{
+				Addr:    s.ListenAddress,
+				Net:     network,
+				Handler: s.mux,
+			}
+			s.srvs = append(s.srvs, srv)
+			s.lock.Unlock()
+			log.Debug("Server unlocked")
+
+			if err := srv.ListenAndServe(); err != nil {
 				log.Panicf("Serve at [%s]%s error: %v", network, s.ListenAddress, err)
 			}
 		}(proto)
@@ -41,12 +54,15 @@ func (s *Server) Run() {
 
 // ServeDNS implements dns.Handler interface
 func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
-
+	log.Debugf("Receive request\n%v", m)
 }
 
 // Stop the server graceful
 func (s *Server) Stop() {
 	// @TODO should have a graceful way to close dns server and clean up
 	log.Infoln("Graceful shutdown")
+	for _, srv := range s.srvs {
+		srv.Shutdown()
+	}
 	s.wg.Done()
 }
