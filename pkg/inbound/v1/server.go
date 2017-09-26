@@ -43,3 +43,9 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 
 }
+
+// Stop the server graceful
+func (s *Server) Stop() {
+	// @TODO should have a graceful way to close dns server and clean up
+	log.Infoln("Graceful shutdown")
+}
