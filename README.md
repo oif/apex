@@ -13,5 +13,11 @@
     * UDP/TCP DNS
 * Hosts
 
+# TODO
+[x] Google HTTPS DNS package
+[ ] Plugin System
+[ ] Cache
+[ ] DNS Pack
+
 # License
 MIT
