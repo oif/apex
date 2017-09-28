@@ -5,6 +5,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
+	plugin "github.com/oif/apex/pkg/plugin/v1"
+	"github.com/oif/apex/pkg/types"
 )
 
 // Server implements DNS server with dns.Handler
@@ -12,10 +14,11 @@ type Server struct {
 	ListenAddress  string
 	ListenProtocol []string
 
-	mux  *dns.ServeMux
-	srvs []*dns.Server
-	lock sync.RWMutex
-	wg   *sync.WaitGroup
+	pluginObjs []plugin.Object
+	mux        *dns.ServeMux
+	srvs       []*dns.Server
+	lock       sync.RWMutex
+	wg         *sync.WaitGroup
 }
 
 // Run server
@@ -54,7 +57,38 @@ func (s *Server) Run() {
 
 // ServeDNS implements dns.Handler interface
 func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
+	var (
+		abort bool
+		err   error
+	)
 	log.Debugf("Receive request\n%v", m)
+	pack := new(types.DNSPack)
+	pack.Msg = m
+
+	for _, p := range s.pluginObjs {
+		pack, abort, err = p.Patch(pack)
+		if err != nil {
+			// error occ
+			log.Errorf("Error in %s: %v", p.Name(), err)
+			break
+		}
+		if abort {
+			log.Infof("Abort after %s", p.Name())
+			break
+		}
+	}
+
+	// write resposne message
+	if err = w.WriteMsg(pack.Msg); err != nil {
+		log.Errorf("Error when write response message: %v", err)
+	}
+}
+
+// RegisterPlugins for server
+func (s *Server) RegisterPlugins(p plugin.Object) error {
+	s.pluginObjs = append(s.pluginObjs, p)
+	// @TODO do some initialization works here
+	return p.Initialize()
 }
 
 // Stop the server graceful
