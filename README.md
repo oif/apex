@@ -14,10 +14,11 @@
 * Hosts
 
 # TODO
-[x] Google HTTPS DNS package
-[ ] Plugin System
-[ ] Cache
-[ ] DNS Pack
+- [x] Google DNS over TLS plugin
+- [ ] Plugin System
+- [ ] Cache
+- [ ] Context
+- [ ] Documents
 
 # License
 MIT
