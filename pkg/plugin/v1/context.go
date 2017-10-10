@@ -2,6 +2,7 @@ package v1
 
 import (
 	"math"
+	"net"
 
 	"github.com/miekg/dns"
 )
@@ -21,6 +22,15 @@ type Context struct {
 	index         int8
 	plugins       PluginChain
 	pluginsLength int8
+	clientIP      net.IP
+}
+
+// NewContext with basic properties
+func NewContext(w dns.ResponseWriter, m *dns.Msg) *Context {
+	c := new(Context)
+	c.Writer = w
+	c.Msg = m
+	return c
 }
 
 // MustRegisterPluginsOnce register plugins
@@ -94,4 +104,14 @@ func (c *Context) GetFloat64(key string) (value float64) {
 }
 
 // ClientIP return client request IP
-func (c *Context) ClientIP() {}
+func (c *Context) ClientIP() net.IP {
+	if c.clientIP == nil {
+		switch c.Writer.RemoteAddr().Network() {
+		case "tcp", "tcp4", "tcp6":
+			c.clientIP = c.Writer.RemoteAddr().(*net.TCPAddr).IP
+		case "udp", "udp4", "udp6":
+			c.clientIP = c.Writer.RemoteAddr().(*net.UDPAddr).IP
+		}
+	}
+	return c.clientIP
+}
