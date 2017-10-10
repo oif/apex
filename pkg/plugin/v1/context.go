@@ -36,6 +36,9 @@ func NewContext(w dns.ResponseWriter, m *dns.Msg) *Context {
 
 // MustRegisterPluginsOnce register plugins
 func (c *Context) MustRegisterPluginsOnce(pluginsChain PluginChain) {
+	if pluginsChain == nil {
+		panic("Plugin chain is nil")
+	}
 	c.plugins = pluginsChain
 	c.pluginsLength = int8(len(c.plugins))
 }
