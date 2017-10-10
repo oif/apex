@@ -13,11 +13,11 @@ type Server struct {
 	ListenAddress  string
 	ListenProtocol []string
 
-	pluginObjs []plugin.Object
-	mux        *dns.ServeMux
-	srvs       []*dns.Server
-	lock       sync.RWMutex
-	wg         *sync.WaitGroup
+	plugins plugin.PluginChain
+	mux     *dns.ServeMux
+	srvs    []*dns.Server
+	lock    sync.RWMutex
+	wg      *sync.WaitGroup
 }
 
 // Run server
@@ -63,22 +63,12 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 	log.Debugf("Receive request\n%v", m)
 
 	context := plugin.NewContext(w, m)
+	context.MustRegisterPluginsOnce(s.plugins)
+	context.Next()
+
 	log.WithFields(log.Fields{
 		"remote_addr": context.ClientIP(),
 	}).Info()
-
-	for _, p := range s.pluginObjs {
-		pack, abort, err = p.Patch(pack)
-		if err != nil {
-			// error occ
-			log.Errorf("Error in %s: %v", p.Name(), err)
-			break
-		}
-		if abort {
-			log.Infof("Abort after %s", p.Name())
-			break
-		}
-	}
 
 	// write resposne message
 	if err = w.WriteMsg(context.Msg); err != nil {
@@ -88,7 +78,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 
 // RegisterPlugins for server
 func (s *Server) RegisterPlugins(p plugin.Object) error {
-	s.pluginObjs = append(s.pluginObjs, p)
+	s.plugins = append(s.plugins, p)
 	// @TODO do some initialization works here
 	return p.Initialize()
 }

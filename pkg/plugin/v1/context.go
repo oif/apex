@@ -3,6 +3,7 @@ package v1
 import (
 	"math"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -12,7 +13,7 @@ const (
 )
 
 // Context pack up with a dns message, and is the most important part of apex
-// It allow us to pass variables throught plugins, manage the lifecycle and flow
+// It allow us to pass variables throught plugins, manage the work flow
 type Context struct {
 	Writer dns.ResponseWriter
 	Msg    *dns.Msg
@@ -34,8 +35,8 @@ func NewContext(w dns.ResponseWriter, m *dns.Msg) *Context {
 }
 
 // MustRegisterPluginsOnce register plugins
-func (c *Context) MustRegisterPluginsOnce(objs ...Object) {
-	c.plugins = objs
+func (c *Context) MustRegisterPluginsOnce(pluginsChain PluginChain) {
+	c.plugins = pluginsChain
 	c.pluginsLength = int8(len(c.plugins))
 }
 
@@ -45,6 +46,31 @@ func (c *Context) Next() {
 	for ; c.index < c.pluginsLength; c.index++ {
 		c.plugins[c.index].Patch(c)
 	}
+}
+
+// Abort prevents plugins calling after current plugin
+func (c *Context) Abort() {
+	c.index = abortIndex
+}
+
+// IsAborted returns true if the current context was aborted.
+func (c *Context) IsAborted() bool {
+	return c.index >= abortIndex
+}
+
+// Error will panic if err is nil. Append err into context.errors
+func (c *Context) Error(err error) error {
+	if err != nil {
+		panic("err should not be nil")
+	}
+	c.Errors = append(c.Errors, err)
+	return err
+}
+
+// AbortWithError calls `Abort()` and `Error()`
+func (c *Context) AbortWithError(err error) error {
+	c.Abort()
+	return c.Error(err)
 }
 
 // Key Value Pair
@@ -114,4 +140,28 @@ func (c *Context) ClientIP() net.IP {
 		}
 	}
 	return c.clientIP
+}
+
+// Deadline implements context
+func (c *Context) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+// Done implements context
+func (c *Context) Done() <-chan struct{} {
+	return nil
+}
+
+// Err implements context
+func (c *Context) Err() error {
+	return nil
+}
+
+// Value implements context
+func (c *Context) Value(key interface{}) interface{} {
+	if keyAsString, ok := key.(string); ok {
+		val, _ := c.Get(keyAsString)
+		return val
+	}
+	return nil
 }
