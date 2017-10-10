@@ -6,19 +6,13 @@
 ΛPΞX is a DNS server written in Go, help you connect to the real Internet.
 
 # Feature
-* Cache
 * edns-client-subnet
 * Multiple DNS upstream
     * DNS Over TLS
     * UDP/TCP DNS
 * Hosts
-
-# TODO
-- [x] Google DNS over TLS plugin
-- [ ] Plugin System
-- [ ] Cache
-- [ ] Context
-- [ ] Documents
+* DNSSEC
+* Cache
 
 # License
 MIT
