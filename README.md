@@ -14,5 +14,8 @@
 * DNSSEC
 * Cache
 
+# Package Management
+Apex uses the Go community [dep](https://github.com/golang/dep) project for package management, but it's young so maybe will cause some unexcepted issue occurred during building. For more information about dep project status, check [dep - Current status](https://github.com/golang/dep#current-status)
+
 # License
 MIT
