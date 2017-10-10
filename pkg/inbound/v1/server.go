@@ -66,9 +66,11 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 	context.MustRegisterPluginsOnce(s.plugins)
 	context.Next()
 
-	log.WithFields(log.Fields{
-		"remote_addr": context.ClientIP(),
-	}).Info()
+	if context.HasError() {
+		for _, err = range context.Errors {
+			log.Errorf("Context error: %v", err)
+		}
+	}
 
 	// write resposne message
 	if err = w.WriteMsg(context.Msg); err != nil {

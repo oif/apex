@@ -76,6 +76,11 @@ func (c *Context) AbortWithError(err error) error {
 	return c.Error(err)
 }
 
+// HasError returns true if the current context has some errors.
+func (c *Context) HasError() bool {
+	return len(c.Errors) > 0
+}
+
 // Key Value Pair
 
 // Set key value pair into context
