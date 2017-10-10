@@ -72,6 +72,6 @@ func TestGoogleDNS(t *testing.T) {
 	response, err := BytesToResolveResponse(resp)
 	assert.NoError(t, err, "JSON unmarshal error")
 	success, comment := response.Success()
-	assert.Equalf(t, true, success, "Resolve fail, get %v", comment)
+	assert.Equal(t, true, success, "Resolve fail", comment)
 	assert.Equal(t, dns.TypeA, response.Question[0].Type, "Question type")
 }
