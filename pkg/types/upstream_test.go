@@ -22,7 +22,7 @@ func TestUpstreamCheck(t *testing.T) {
 
 	u.Timeout = 0
 	u.Check()
-	assert.NotEqualf(t, DefaultUpstreamTimeout, u.Timeout, "Timeout should be %d but %d get", DefaultUpstreamTimeout, u.Timeout)
+	assert.NotEqual(t, DefaultUpstreamTimeout, u.Timeout, "Unexpected timeout got")
 
 	assert.NoError(t, u.Check(), "No error")
 }

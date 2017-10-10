@@ -17,6 +17,6 @@ func TestHTTPRequest(t *testing.T) {
 		Timeout: 5 * time.Second,
 	}
 	_, statusCode, err := httpGet(http.MethodGet, "https://github.com", nil)
-	assert.Equalf(t, 200, statusCode, "Except status code 200, but %d get", statusCode)
+	assert.Equal(t, 200, statusCode, "Unexcept status code")
 	assert.NoError(t, err, "Error due to did not initialize http client")
 }
