@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/oif/apex/pkg/gdns"
-	"github.com/oif/apex/pkg/types"
+	plugin "github.com/oif/apex/pkg/plugin/v1"
 )
 
 // GoogleDNSPluginName for g.Name
@@ -43,34 +43,37 @@ func (g *GoogleDNS) Initialize() error {
 }
 
 // Patch the dns pakcage
-func (g *GoogleDNS) Patch(dnsPack *types.DNSPack) (*types.DNSPack, bool, error) {
+func (g *GoogleDNS) Patch(c *plugin.Context) {
 	// construct google dns request body
 	rr := new(gdns.ResolveRequest)
 	// get first question default
-	if len(dnsPack.Msg.Question) < 1 {
+	if len(c.Msg.Question) < 1 {
 		// abort due to no question here
-		return dnsPack, true, nil
+		c.Abort()
+		return
 	}
-	question := dnsPack.Msg.Question[0]
+	question := c.Msg.Question[0]
 	rr.Name = question.Name
 	rr.Type = question.Qtype
 	resp, _, err := rr.Request() // ignore status code current
 	if err != nil {
-		return dnsPack, false, err
+		c.AbortWithError(err)
+		return
 	}
 	response, err := gdns.BytesToResolveResponse(resp)
 	// json decode error
 	if err != nil {
-		return dnsPack, false, err
+		c.AbortWithError(err)
+		return
 	}
 	// resolve error
 	if ok, comment := response.Success(); !ok {
-		return dnsPack, false, errors.New(comment)
+		c.AbortWithError(errors.New(comment))
+		return
 	}
 
 	for _, ans := range response.Answer {
 		// construct every response for dnsPack
-		dnsPack.Msg.Answer = append(dnsPack.Msg.Answer, ans.ToRR())
+		c.Msg.Answer = append(c.Msg.Answer, ans.ToRR())
 	}
-	return dnsPack, false, nil
 }
