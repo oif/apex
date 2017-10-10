@@ -6,7 +6,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
-	"github.com/oif/apex/pkg/types"
 )
 
 // Server implements DNS server with dns.Handler
@@ -58,12 +57,15 @@ func (s *Server) Run() {
 // ServeDNS implements dns.Handler interface
 func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 	var (
-		abort bool
-		err   error
+		// abort bool
+		err error
 	)
 	log.Debugf("Receive request\n%v", m)
-	pack := new(types.DNSPack)
-	pack.Msg = m
+
+	context := plugin.NewContext(w, m)
+	log.WithFields(log.Fields{
+		"remote_addr": context.ClientIP(),
+	}).Info()
 
 	for _, p := range s.pluginObjs {
 		pack, abort, err = p.Patch(pack)
@@ -79,7 +81,7 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 	}
 
 	// write resposne message
-	if err = w.WriteMsg(pack.Msg); err != nil {
+	if err = w.WriteMsg(context.Msg); err != nil {
 		log.Errorf("Error when write response message: %v", err)
 	}
 }
