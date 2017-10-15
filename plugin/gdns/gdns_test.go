@@ -47,7 +47,7 @@ func initClient() {
 	}
 }
 
-func TestGoogleDNS(t *testing.T) {
+func TestGoogleDNSPlugin(t *testing.T) {
 	request := &ResolveRequest{}
 	_, _, err := request.Request()
 	assert.Error(t, err, "Invalid resolve name")

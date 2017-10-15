@@ -2,10 +2,12 @@ package v1
 
 import (
 	"sync"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
+	"github.com/sony/sonyflake"
 )
 
 // Server implements DNS server with dns.Handler
@@ -18,6 +20,7 @@ type Server struct {
 	srvs    []*dns.Server
 	lock    sync.RWMutex
 	wg      *sync.WaitGroup
+	uuid    *sonyflake.Sonyflake
 }
 
 // Run server
@@ -29,6 +32,15 @@ func (s *Server) Run() {
 	s.mux.Handle(".", s)
 
 	s.wg = new(sync.WaitGroup)
+	s.uuid = sonyflake.NewSonyflake(sonyflake.Settings{
+		StartTime: time.Now(),
+		MachineID: func() (uint16, error) {
+			return 1, nil
+		},
+		CheckMachineID: func(id uint16) bool {
+			return true
+		},
+	})
 	// Add wait group
 	s.wg.Add(len(s.ListenProtocol))
 
@@ -58,11 +70,23 @@ func (s *Server) Run() {
 func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 	var (
 		// abort bool
-		err error
+		err     error
+		reqID   uint64
+		context *plugin.Context
 	)
-	log.Debugf("Receive request\n%v", m)
+	reqID, err = s.uuid.NextID()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Error("Get request ID failed")
+		goto RESPONSE
+	}
 
-	context := plugin.NewContext(w, m)
+	log.WithFields(log.Fields{
+		"req_id": reqID,
+	}).Debug("Receive request")
+
+	context = plugin.NewContext(w, m, reqID)
 	context.MustRegisterPluginsOnce(s.plugins)
 	context.Next()
 
@@ -72,8 +96,13 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 		}
 	}
 
+	log.WithFields(log.Fields{
+		"req_id": reqID,
+	}).Debug("Resolve done ready to response")
+
+RESPONSE:
 	// write resposne message
-	if err = w.WriteMsg(context.Msg); err != nil {
+	if err = w.WriteMsg(m); err != nil {
 		log.Errorf("Error when write response message: %v", err)
 	}
 }

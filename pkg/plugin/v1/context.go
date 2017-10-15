@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
 )
 
@@ -20,17 +21,21 @@ type Context struct {
 	Errors []error
 	KV     map[string]interface{}
 
+	clientIP  net.IP
+	requestID uint64
+
+	// plugin
 	index         int8
-	plugins       PluginChain
+	plugins       PluginChain // @TODO postStart preStop ?
 	pluginsLength int8
-	clientIP      net.IP
 }
 
 // NewContext with basic properties
-func NewContext(w dns.ResponseWriter, m *dns.Msg) *Context {
+func NewContext(w dns.ResponseWriter, m *dns.Msg, reqID uint64) *Context {
 	c := new(Context)
 	c.Writer = w
 	c.Msg = m
+	c.requestID = reqID
 	return c
 }
 
@@ -45,7 +50,6 @@ func (c *Context) MustRegisterPluginsOnce(pluginsChain PluginChain) {
 
 // Next plugin
 func (c *Context) Next() {
-	c.index++
 	for ; c.index < c.pluginsLength; c.index++ {
 		c.plugins[c.index].Patch(c)
 	}
@@ -63,8 +67,8 @@ func (c *Context) IsAborted() bool {
 
 // Error will panic if err is nil. Append err into context.errors
 func (c *Context) Error(err error) error {
-	if err != nil {
-		panic("err should not be nil")
+	if err == nil {
+		panic("except error but nil given")
 	}
 	c.Errors = append(c.Errors, err)
 	return err
@@ -79,6 +83,13 @@ func (c *Context) AbortWithError(err error) error {
 // HasError returns true if the current context has some errors.
 func (c *Context) HasError() bool {
 	return len(c.Errors) > 0
+}
+
+// Logger returns logrus.Entry with request ID
+func (c *Context) Logger() *logrus.Entry {
+	return logrus.WithFields(logrus.Fields{
+		"req_id": c.requestID,
+	})
 }
 
 // Key Value Pair
@@ -145,6 +156,10 @@ func (c *Context) ClientIP() net.IP {
 			c.clientIP = c.Writer.RemoteAddr().(*net.TCPAddr).IP
 		case "udp", "udp4", "udp6":
 			c.clientIP = c.Writer.RemoteAddr().(*net.UDPAddr).IP
+		}
+
+		if !isInternalIP(c.clientIP) {
+			// get dns internal ip
 		}
 	}
 	return c.clientIP

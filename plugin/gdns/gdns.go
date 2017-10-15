@@ -1,4 +1,4 @@
-package plugin
+package gdns
 
 import (
 	"errors"
@@ -7,26 +7,25 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/oif/apex/pkg/gdns"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
 )
 
-// GoogleDNSPluginName for g.Name
-const GoogleDNSPluginName = "Google DNS Plugin"
+// PluginName for g.Name
+const PluginName = "Google DNS Plugin"
 
-// GoogleDNS plugin implements pkg/plugin/v1
-type GoogleDNS struct{}
+// Plugin implements pkg/plugin/v1
+type Plugin struct{}
 
 // Name return the name of this plugin
-func (g *GoogleDNS) Name() string {
-	return GoogleDNSPluginName
+func (p *Plugin) Name() string {
+	return PluginName
 }
 
-// Initialize Google DNS
-func (g *GoogleDNS) Initialize() error {
+// Initialize Google DNS Plugin
+func (p *Plugin) Initialize() error {
 	proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
 
-	gdns.HTTPClient = &http.Client{
+	HTTPClient = &http.Client{
 		Timeout: 2 * time.Second,
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyAddr),
@@ -43,9 +42,9 @@ func (g *GoogleDNS) Initialize() error {
 }
 
 // Patch the dns pakcage
-func (g *GoogleDNS) Patch(c *plugin.Context) {
+func (p *Plugin) Patch(c *plugin.Context) {
 	// construct google dns request body
-	rr := new(gdns.ResolveRequest)
+	rr := new(ResolveRequest)
 	// get first question default
 	if len(c.Msg.Question) < 1 {
 		// abort due to no question here
@@ -55,12 +54,14 @@ func (g *GoogleDNS) Patch(c *plugin.Context) {
 	question := c.Msg.Question[0]
 	rr.Name = question.Name
 	rr.Type = question.Qtype
+	rr.CheckingDisabled = c.Msg.CheckingDisabled
+	rr.EDNSClientSubnet = c.ClientIP().String()
 	resp, _, err := rr.Request() // ignore status code current
 	if err != nil {
 		c.AbortWithError(err)
 		return
 	}
-	response, err := gdns.BytesToResolveResponse(resp)
+	response, err := BytesToResolveResponse(resp)
 	// json decode error
 	if err != nil {
 		c.AbortWithError(err)
