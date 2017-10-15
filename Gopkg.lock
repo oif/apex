@@ -32,6 +32,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/sony/sonyflake"
+  packages = ["."]
+  revision = "fa881fb1052b152e977c41023052c2f2a1c475e9"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
@@ -52,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3dd5577c86efbd26b191d283e1e802b919e658d194c07717a093c34eb77183fa"
+  inputs-digest = "a3e7b30ba31226e9065ef6ba883a2ac0578a08d82a4b345573a479970dab37d3"
   solver-name = "gps-cdcl"
   solver-version = 1
