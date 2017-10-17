@@ -41,6 +41,12 @@ func (p *Plugin) Initialize() error {
 	return nil
 }
 
+// Warmup implements plugin
+func (p *Plugin) Warmup(c *plugin.Context) {}
+
+// AfterResponse implements plugin
+func (p *Plugin) AfterResponse(c *plugin.Context, err error) {}
+
 // Patch the dns pakcage
 func (p *Plugin) Patch(c *plugin.Context) {
 	// construct google dns request body

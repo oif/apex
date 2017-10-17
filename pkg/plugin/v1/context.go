@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	abortIndex int8 = math.MaxInt8 / 2 // 63
+	abortIndex uint8 = math.MaxUint8 / 2 // 127
 )
 
 // Context pack up with a dns message, and is the most important part of apex
@@ -25,9 +25,9 @@ type Context struct {
 	requestID uint64
 
 	// plugin
-	index         int8
-	plugins       PluginChain // @TODO postStart preStop ?
-	pluginsLength int8
+	index       uint8
+	pluginChain PluginChain
+	chainLength uint8
 }
 
 // NewContext with basic properties
@@ -40,18 +40,34 @@ func NewContext(w dns.ResponseWriter, m *dns.Msg, reqID uint64) *Context {
 }
 
 // MustRegisterPluginsOnce register plugins
-func (c *Context) MustRegisterPluginsOnce(pluginsChain PluginChain) {
-	if pluginsChain == nil {
-		panic("Plugin chain is nil")
+func (c *Context) MustRegisterPluginsOnce(chain PluginChain) {
+	if chain == nil {
+		panic("Plugin function chain is nil")
 	}
-	c.plugins = pluginsChain
-	c.pluginsLength = int8(len(c.plugins))
+	c.pluginChain = chain
+	c.chainLength = uint8(len(c.pluginChain))
 }
 
-// Next plugin
-func (c *Context) Next() {
-	for ; c.index < c.pluginsLength; c.index++ {
-		c.plugins[c.index].Patch(c)
+// Warmup func
+func (c *Context) Warmup() {
+	var i uint8
+	for ; i < c.chainLength; i++ {
+		c.pluginChain[i].Warmup(c)
+	}
+}
+
+// Patch with plugins
+func (c *Context) Patch() {
+	for ; c.index < c.chainLength; c.index++ {
+		c.pluginChain[c.index].Patch(c)
+	}
+}
+
+// AfterResponse func
+func (c *Context) AfterResponse(responseError error) {
+	var i uint8
+	for ; i < c.chainLength; i++ {
+		c.pluginChain[i].AfterResponse(c, responseError)
 	}
 }
 

@@ -15,12 +15,14 @@ type Server struct {
 	ListenAddress  string
 	ListenProtocol []string
 
+	mux  *dns.ServeMux
+	srvs []*dns.Server
+	lock sync.RWMutex
+	wg   *sync.WaitGroup
+	uuid *sonyflake.Sonyflake
+
+	// plugin
 	plugins plugin.PluginChain
-	mux     *dns.ServeMux
-	srvs    []*dns.Server
-	lock    sync.RWMutex
-	wg      *sync.WaitGroup
-	uuid    *sonyflake.Sonyflake
 }
 
 // Run server
@@ -88,7 +90,9 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 
 	context = plugin.NewContext(w, m, reqID)
 	context.MustRegisterPluginsOnce(s.plugins)
-	context.Next()
+
+	context.Warmup()
+	context.Patch()
 
 	if context.HasError() {
 		for _, err = range context.Errors {
@@ -105,6 +109,7 @@ RESPONSE:
 	if err = w.WriteMsg(m); err != nil {
 		log.Errorf("Error when write response message: %v", err)
 	}
+	context.AfterResponse(err)
 }
 
 // RegisterPlugins for server

@@ -6,6 +6,11 @@ type Object interface {
 	Name() string
 	// Initialize plugin object
 	Initialize() error
+
+	// Warmup before patch
+	Warmup(*Context)
 	// Patch dns message and return it back for chain-call
 	Patch(*Context)
+	// AfterResponse call after response with response status
+	AfterResponse(*Context, error)
 }

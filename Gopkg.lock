@@ -14,6 +14,12 @@
   version = "v1.0.3"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/coocood/freecache"
+  packages = ["."]
+  revision = "a47e26eb67ac2657e4b5a62b1975bb2b65e0b8b3"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -38,6 +44,12 @@
   revision = "fa881fb1052b152e977c41023052c2f2a1c475e9"
 
 [[projects]]
+  name = "github.com/spaolacci/murmur3"
+  packages = ["."]
+  revision = "0d12bf811670bf6a1a63828dfbd003eded177fce"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
@@ -58,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a3e7b30ba31226e9065ef6ba883a2ac0578a08d82a4b345573a479970dab37d3"
+  inputs-digest = "0f0ef6327d75c155a8ce29718b20b9d3fcfdbeb1f11ea48c771d53a5ccfb4502"
   solver-name = "gps-cdcl"
   solver-version = 1
