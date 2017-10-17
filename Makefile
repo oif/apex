@@ -1,11 +1,8 @@
 test :
-	./hack/test.sh
-
-build :
-	- cd cmd/apexd
-	- go build
-
-clean :
+	- ./hack/test.sh
 	- rm *.coverprofile
 
-.PHONY:  clean
+build :
+	CGO_ENABLED=0 go build -o apexd cmd/apexd/main.go
+
+.PHONY:  build
