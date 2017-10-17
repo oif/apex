@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BurntSushi/toml"
 	"github.com/oif/apex/pkg/types"
+
+	"github.com/BurntSushi/toml"
 )
 
 const (

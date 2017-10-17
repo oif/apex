@@ -1,8 +1,9 @@
 package cache
 
 import (
-	"github.com/coocood/freecache"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
+
+	"github.com/coocood/freecache"
 )
 
 // PluginName for g.Name

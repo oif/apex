@@ -4,9 +4,10 @@ import (
 	"sync"
 	"time"
 
+	plugin "github.com/oif/apex/pkg/plugin/v1"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/miekg/dns"
-	plugin "github.com/oif/apex/pkg/plugin/v1"
 	"github.com/sony/sonyflake"
 )
 

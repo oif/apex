@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
 	inbound "github.com/oif/apex/pkg/inbound/v1"
 	"github.com/oif/apex/plugin/cache"
 	"github.com/oif/apex/plugin/gdns"
 	"github.com/oif/apex/plugin/statistics"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
-	logrus.SetLevel(logrus.DebugLevel)
+	log.SetLevel(log.DebugLevel)
 	s := new(inbound.Server)
 	s.ListenAddress = ":53"
 	s.ListenProtocol = []string{"udp"}

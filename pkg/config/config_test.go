@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/oif/apex/pkg/types"
+
 	"github.com/stretchr/testify/assert"
 )
 

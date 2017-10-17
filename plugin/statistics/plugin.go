@@ -3,8 +3,9 @@ package statistics
 import (
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // PluginName for g.Name
