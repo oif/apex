@@ -3,6 +3,8 @@ package gdns
 import (
 	"encoding/json"
 	"net"
+	"strconv"
+	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -17,6 +19,7 @@ type ResolveResponse struct {
 	CheckingDisabled   bool          `json:"CD"`                 // CD, Whether the client asked to disable DNSSEC
 	Question           []Question    `json:"Question"`           // Question
 	Answer             []Answer      `json:"Answer"`             // Answer
+	Authority          []Answer      `json:"Authority"`          // Authority
 	Additional         []interface{} `json:"Additional"`         // Additional response
 	EDNSClientSubnet   string        `json:"edns_client_subnet"` // IP address / scope prefix-length, ref. https://tools.ietf.org/html/draft-ietf-dnsop-edns-client-subnet-08#section-6
 	Comment            string        `json:"Comment"`            // Comment
@@ -45,7 +48,7 @@ func BytesToResolveResponse(bytes []byte) (rr *ResolveResponse, err error) {
 
 // Success if response status is 0 means success, otherwise will have a comment for failure detail
 func (r *ResolveResponse) Success() (bool, string) {
-	return r.Status == 0, r.Comment
+	return r.Status != 1 && r.Status != 2 && r.Status != 5, r.Comment
 }
 
 // ToRR convert a google dns anwser to dns.RR
@@ -83,6 +86,25 @@ func (a Answer) ToRR() (rr dns.RR) {
 		rr = &dns.PTR{
 			Hdr: a.GetRRHeader(),
 			Ptr: a.Data,
+		}
+	case dns.TypeSOA:
+		segs := strings.Split(a.Data, " ")
+
+		serial, _ := strconv.Atoi(segs[2])
+		refresh, _ := strconv.Atoi(segs[3])
+		retry, _ := strconv.Atoi(segs[4])
+		expire, _ := strconv.Atoi(segs[5])
+		minttl, _ := strconv.Atoi(segs[6])
+
+		rr = &dns.SOA{
+			Hdr:     a.GetRRHeader(),
+			Ns:      segs[0],
+			Mbox:    segs[1],
+			Serial:  uint32(serial),
+			Refresh: uint32(refresh),
+			Retry:   uint32(retry),
+			Expire:  uint32(expire),
+			Minttl:  uint32(minttl),
 		}
 	default:
 		rr = &dns.TXT{

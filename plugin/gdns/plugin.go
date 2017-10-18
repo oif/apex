@@ -23,7 +23,7 @@ func (p *Plugin) Name() string {
 
 // Initialize Google DNS Plugin
 func (p *Plugin) Initialize() error {
-	proxyAddr, _ := url.Parse("http://127.0.0.1:6152")
+	proxyAddr, _ := url.Parse("http://127.0.0.1:8118")
 
 	HTTPClient = &http.Client{
 		Timeout: 2 * time.Second,
@@ -82,5 +82,8 @@ func (p *Plugin) Patch(c *plugin.Context) {
 	for _, ans := range response.Answer {
 		// construct every response for dnsPack
 		c.Msg.Answer = append(c.Msg.Answer, ans.ToRR())
+	}
+	for _, aut := range response.Authority {
+		c.Msg.Ns = append(c.Msg.Ns, aut.ToRR())
 	}
 }
