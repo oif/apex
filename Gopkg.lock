@@ -26,6 +26,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/influxdata/influxdb"
+  packages = ["client/v2","models","pkg/escape"]
+  revision = "a7c3d3c0f7b74f71919047adbc4933460967a576"
+  version = "v1.3.6"
+
+[[projects]]
   branch = "master"
   name = "github.com/miekg/dns"
   packages = [".","internal/socket"]
@@ -70,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0f0ef6327d75c155a8ce29718b20b9d3fcfdbeb1f11ea48c771d53a5ccfb4502"
+  inputs-digest = "69e77a39d0fb152fa71a4d24996cad286d1cf61cf82e7b3c05696fab9ff6460b"
   solver-name = "gps-cdcl"
   solver-version = 1
