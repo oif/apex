@@ -1,7 +1,7 @@
 package main
 
 import (
-	inbound "github.com/oif/apex/pkg/inbound/v1"
+	inbound "github.com/oif/apex/pkg/engine/v1"
 	"github.com/oif/apex/plugin/cache"
 	"github.com/oif/apex/plugin/gdns"
 	"github.com/oif/apex/plugin/statistics"
