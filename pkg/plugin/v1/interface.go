@@ -14,3 +14,12 @@ type Object interface {
 	// AfterResponse call after response with response status
 	AfterResponse(*Context, error)
 }
+
+// PluginChain contain series of plugins
+type PluginChain []Object
+
+// PluginFunc type
+type PluginFunc func(*Context)
+
+// PluginFuncChain type
+type PluginFuncChain []PluginFunc

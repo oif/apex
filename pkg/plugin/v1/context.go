@@ -44,7 +44,7 @@ func (c *Context) MustRegisterPluginsOnce(chain PluginChain) {
 	if chain == nil {
 		panic("Plugin function chain is nil")
 	}
-	c.pluginChain = chain
+	copy(c.pluginChain, chain)
 	c.chainLength = uint8(len(c.pluginChain))
 }
 
