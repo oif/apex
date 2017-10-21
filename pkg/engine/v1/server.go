@@ -28,10 +28,10 @@ type Server struct {
 
 // Run server
 func (s *Server) Run() {
-	log.Infof("Starting service at %s on ", s.ListenAddress, s.ListenProtocol)
+	log.Infof("Starting service at %v on %v", s.ListenAddress, s.ListenProtocol)
 
 	s.mux = dns.NewServeMux()
-	log.Debugln("Setting DNS server handle")
+	log.Debug("Setting DNS server handle")
 	s.mux.Handle(".", s)
 
 	s.wg = new(sync.WaitGroup)
@@ -66,6 +66,7 @@ func (s *Server) Run() {
 			}
 		}(proto)
 	}
+
 	s.wg.Wait()
 }
 
@@ -87,6 +88,8 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 
 	log.WithFields(log.Fields{
 		"req_id": reqID,
+		"name":   m.Question[0].Name,
+		"type":   m.Question[0].Qtype,
 	}).Debug("Receive request")
 
 	context = plugin.NewContext(w, m, reqID)
