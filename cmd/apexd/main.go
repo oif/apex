@@ -19,7 +19,16 @@ func main() {
 		plugin.ConfigFilePath = "statistics.toml"
 		return plugin
 	}())
-	s.RegisterPlugins(func() *cache.Plugin { return new(cache.Plugin) }())
-	s.RegisterPlugins(func() *gdns.Plugin { return new(gdns.Plugin) }())
+	s.RegisterPlugins(func() *cache.Plugin {
+		plugin := new(cache.Plugin)
+		plugin.CacheSize = 512
+		return plugin
+	}())
+	s.RegisterPlugins(func() *gdns.Plugin {
+		plugin := new(gdns.Plugin)
+		plugin.EnableProxy = true
+		plugin.ProxyAddr = "http://127.0.0.1:8118"
+		return plugin
+	}())
 	s.Run()
 }

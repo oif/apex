@@ -14,7 +14,10 @@ import (
 const PluginName = "Google DNS Plugin"
 
 // Plugin implements pkg/plugin/v1
-type Plugin struct{}
+type Plugin struct {
+	EnableProxy bool
+	ProxyAddr   string
+}
 
 // Name return the name of this plugin
 func (p *Plugin) Name() string {
@@ -23,12 +26,9 @@ func (p *Plugin) Name() string {
 
 // Initialize Google DNS Plugin
 func (p *Plugin) Initialize() error {
-	proxyAddr, _ := url.Parse("http://127.0.0.1:8118")
-
 	HTTPClient = &http.Client{
 		Timeout: 2 * time.Second,
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyAddr),
 			Dial: (&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
@@ -38,6 +38,12 @@ func (p *Plugin) Initialize() error {
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
+
+	if p.EnableProxy {
+		proxyAddr, _ := url.Parse(p.ProxyAddr)
+		HTTPClient.Transport.(*http.Transport).Proxy = http.ProxyURL(proxyAddr)
+	}
+
 	return nil
 }
 
