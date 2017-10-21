@@ -40,15 +40,15 @@ func (p *Plugin) Initialize() error {
 
 // Warmup implements plugin
 func (p *Plugin) Warmup(c *plugin.Context) {
-	c.Set("statistics_plugin:startTime", makeTimestamp())
+	c.Set("statistics_plugin:startTime", makeNanoTimestamp())
 }
 
 // AfterResponse implements plugin
 func (p *Plugin) AfterResponse(c *plugin.Context, err error) {
 	if startAt := c.GetInt64("statistics_plugin:startTime"); startAt != 0 {
-		responseTime := makeTimestamp() - startAt
+		responseTime := makeNanoTimestamp() - startAt
 		c.Logger().WithFields(logrus.Fields{
-			"response_time": responseTime,
+			"response_time(ns)": responseTime,
 		}).Info("Response time usage statistics")
 		// write influxdb
 		go func() {
@@ -65,8 +65,8 @@ func (p *Plugin) AfterResponse(c *plugin.Context, err error) {
 // Patch the dns pakcage
 func (p *Plugin) Patch(c *plugin.Context) {}
 
-func makeTimestamp() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
+func makeNanoTimestamp() int64 {
+	return time.Now().UnixNano()
 }
 
 func writeResponse(qtype uint16, name string, responseTime int64, isSuccess bool) (err error) {
