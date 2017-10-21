@@ -1,69 +1,57 @@
 package cache
 
 import (
-	"errors"
-	"fmt"
-	"strings"
+	"encoding/binary"
+	"hash/fnv"
+	"net"
 
-	"github.com/coocood/freecache"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/miekg/dns"
 )
 
-// CacheKeyFormat the format of cache store key
-const CacheKeyFormat = "%s_%s_%s" // name, type, subnet
-var cache *freecache.Cache        // 解析缓存
+var cache *lru.Cache // 解析缓存
 
-// 根据格式生成 key
-func getKey(name, qtype, ip string) string {
-	dot := strings.LastIndex(ip, ".")
-	if dot > 0 { // v4
-		return fmt.Sprintf(CacheKeyFormat, name, qtype, ip[0:dot])
+func key(m *dns.Msg, clientIP net.IP) uint64 {
+	if m.Truncated {
+		return 0
 	}
-
-	colon := strings.LastIndex(ip, ":")
-	if colon > 0 { // v6
-		return fmt.Sprintf(CacheKeyFormat, name, qtype, ip[0:colon])
-	}
-	return ""
+	return hash(m.Question[0].Name, m.Question[0].Qtype, clientIP)
 }
 
-// 增加 DNS 缓存
-func addDNSCache(m *dns.Msg, ip string) error {
-	if len(m.Answer) > 0 {
-		packed, err := m.Pack()
-		if err != nil {
-			return err
+func hash(qname string, qtype uint16, qip []byte) uint64 {
+	h := fnv.New64()
+	b := make([]byte, 2)
+	binary.BigEndian.PutUint16(b, qtype)
+	h.Write(b)
+	var c byte
+	for i := range qname {
+		c = qname[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 'a' - 'A'
 		}
-		key := getKey(m.Question[0].Name, dns.TypeToString[m.Question[0].Qtype], ip)
-		if key == "" {
-			return errors.New("invalid ip " + ip)
-		}
-		cache.Set([]byte(key), packed, int(m.Answer[0].Header().Ttl))
+		h.Write([]byte{c})
 	}
-	return nil
+	h.Write(qip)
+	return h.Sum64()
 }
 
-// 获取 DNS 缓存
-func getDNSCache(m *dns.Msg, ip string) error {
-	temp := &dns.Msg{}
-	key := getKey(m.Question[0].Name, dns.TypeToString[m.Question[0].Qtype], ip)
-	if key == "" {
-		return errors.New("invalid ip" + ip)
+func writeCache(m *dns.Msg, ip net.IP) {
+	if len(m.Question) > 0 {
+		if key := key(m, ip); key != 0 {
+			cache.Add(key, newItem(m)) // if write failed, just ignore it
+		}
 	}
-	got, err := cache.Get([]byte(key))
-	if err != nil {
-		return err
-	}
-	// 有缓存
-	err = temp.Unpack(got)
-	if err != nil {
-		return err
-	}
+}
 
-	m.Ns = temp.Ns
-	m.Answer = temp.Answer
-	m.Extra = temp.Extra
-
-	// 转换成功
-	return nil
+// return true if hit cache
+func getCache(m *dns.Msg, ip net.IP) bool {
+	if key := key(m, ip); key != 0 {
+		cached, ok := cache.Get(key)
+		if ok {
+			cached.(*item).replyToMsg(m)
+			return true
+		}
+	}
+	// miss cache
+	return false
 }
