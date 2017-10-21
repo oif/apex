@@ -10,11 +10,15 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.ErrorLevel)
+	log.SetLevel(log.DebugLevel)
 	s := new(inbound.Server)
 	s.ListenAddress = ":53"
 	s.ListenProtocol = []string{"udp"}
-	s.RegisterPlugins(func() *statistics.Plugin { return new(statistics.Plugin) }())
+	s.RegisterPlugins(func() *statistics.Plugin {
+		plugin := new(statistics.Plugin)
+		plugin.ConfigFilePath = "statistics.toml"
+		return plugin
+	}())
 	s.RegisterPlugins(func() *cache.Plugin { return new(cache.Plugin) }())
 	s.RegisterPlugins(func() *gdns.Plugin { return new(gdns.Plugin) }())
 	s.Run()

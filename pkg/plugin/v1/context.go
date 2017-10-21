@@ -44,7 +44,7 @@ func (c *Context) MustRegisterPluginsOnce(chain PluginChain) {
 	if chain == nil {
 		panic("Plugin function chain is nil")
 	}
-	copy(c.pluginChain, chain)
+	c.pluginChain = chain
 	c.chainLength = uint8(len(c.pluginChain))
 }
 
@@ -59,6 +59,9 @@ func (c *Context) Warmup() {
 // Patch with plugins
 func (c *Context) Patch() {
 	for ; c.index < c.chainLength; c.index++ {
+		c.Logger().WithFields(logrus.Fields{
+			"plugin": c.pluginChain[c.index].Name(),
+		}).Debug("Patch")
 		c.pluginChain[c.index].Patch(c)
 	}
 }
