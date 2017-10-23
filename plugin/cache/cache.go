@@ -5,16 +5,18 @@ import (
 	"hash/fnv"
 	"net"
 
-	lru "github.com/hashicorp/golang-lru"
+	ca "github.com/oif/apex/pkg/cache"
+
 	"github.com/miekg/dns"
 )
 
-var cache *lru.Cache // 解析缓存
+var cache *ca.Cache // 解析缓存
 
 func key(m *dns.Msg, clientIP net.IP) uint64 {
 	if m.Truncated {
 		return 0
 	}
+
 	return hash(m.Question[0].Name, m.Question[0].Qtype, clientIP)
 }
 
@@ -38,7 +40,11 @@ func hash(qname string, qtype uint16, qip []byte) uint64 {
 func writeCache(m *dns.Msg, ip net.IP) {
 	if len(m.Question) > 0 {
 		if key := key(m, ip); key != 0 {
-			cache.Add(key, newItem(m)) // if write failed, just ignore it
+			var ttl uint32 = 60
+			if len(m.Answer) > 0 {
+				ttl = m.Answer[0].Header().Ttl
+			}
+			cache.Set(key, newItem(m), ttl) // if write failed, just ignore it
 		}
 	}
 }

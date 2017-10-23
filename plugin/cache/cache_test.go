@@ -4,7 +4,8 @@ import (
 	"net"
 	"testing"
 
-	lru "github.com/hashicorp/golang-lru"
+	ca "github.com/oif/apex/pkg/cache"
+
 	"github.com/miekg/dns"
 )
 
@@ -16,11 +17,7 @@ var (
 )
 
 func TestCacheLRU(t *testing.T) {
-	var err error
-	cache, err = lru.New(512)
-	if err != nil {
-		t.Fatal(err)
-	}
+	cache = ca.New(512)
 	m := &dns.Msg{
 		Question: []dns.Question{
 			dns.Question{
@@ -36,11 +33,7 @@ func TestCacheLRU(t *testing.T) {
 }
 
 func BenchmarkWriteCache(b *testing.B) {
-	var err error
-	cache, err = lru.New(512)
-	if err != nil {
-		b.Fatal(err)
-	}
+	cache = ca.New(512)
 	m := &dns.Msg{
 		Question: []dns.Question{
 			dns.Question{
@@ -55,11 +48,7 @@ func BenchmarkWriteCache(b *testing.B) {
 }
 
 func BenchmarkGetCache(b *testing.B) {
-	var err error
-	cache, err = lru.New(512)
-	if err != nil {
-		b.Fatal(err)
-	}
+	cache = ca.New(512)
 	m := &dns.Msg{
 		Question: []dns.Question{
 			dns.Question{

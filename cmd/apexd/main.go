@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.WarnLevel)
 	s := new(inbound.Server)
 	s.ListenAddress = ":53"
 	s.ListenProtocol = []string{"udp"}
