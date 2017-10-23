@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"sync"
 	"time"
 
 	plugin "github.com/oif/apex/pkg/plugin/v1"
@@ -17,6 +18,9 @@ const PluginName = "Statistics Plugin"
 // Plugin implements pkg/plugin/v1
 type Plugin struct {
 	ConfigFilePath string
+
+	points    []*client.Point
+	writeLock sync.Mutex
 }
 
 // Name return the name of this plugin
@@ -34,8 +38,17 @@ func (p *Plugin) Initialize() error {
 		Username: c.InfluxDB.Username,
 		Password: c.InfluxDB.Password,
 	})
-
-	return err
+	if err != nil {
+		return err
+	}
+	// cron job
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			p.writeResponse()
+		}
+	}()
+	return nil
 }
 
 // Warmup implements plugin
@@ -45,31 +58,50 @@ func (p *Plugin) Warmup(c *plugin.Context) {
 
 // AfterResponse implements plugin
 func (p *Plugin) AfterResponse(c *plugin.Context, err error) {
-	if startAt := c.GetInt64("statistics_plugin:startTime"); startAt != 0 {
-		responseTime := makeNanoTimestamp() - startAt
-		c.Logger().WithFields(logrus.Fields{
-			"response_time(ns)": responseTime,
-		}).Info("Response time usage statistics")
-		// write influxdb
-		go func() {
-			err := writeResponse(c.Msg.Question[0].Qtype, c.Msg.Question[0].Name, responseTime, !c.HasError())
-			if err != nil {
-				c.Logger().WithFields(logrus.Fields{
-					"err": err,
-				}).Error("Write influxdb error")
-			}
-		}()
-	}
+	responseTime := makeNanoTimestamp() - c.GetInt64("statistics_plugin:startTime")
+	c.Logger().WithFields(logrus.Fields{
+		"response_time": responseTime,
+	}).Info("Response time usage statistics")
+	// write influxdb
+	go func() {
+		err := p.pushResponsePoint(c.Msg.Question[0].Qtype, c.Msg.Question[0].Name, responseTime, !c.HasError())
+		if err != nil {
+
+		}
+	}()
 }
 
 // Patch the dns pakcage
 func (p *Plugin) Patch(c *plugin.Context) {}
 
 func makeNanoTimestamp() int64 {
-	return time.Now().UnixNano()
+	return time.Now().UnixNano() / int64(time.Microsecond)
 }
 
-func writeResponse(qtype uint16, name string, responseTime int64, isSuccess bool) (err error) {
+func (p *Plugin) pushResponsePoint(qtype uint16, name string, responseTime int64, isSuccess bool) (err error) {
+	pt, err := client.NewPoint(
+		"dns_query",
+		map[string]string{
+			"qtype": string(qtype),
+			"name":  name,
+		},
+		map[string]interface{}{
+			"response_time": responseTime,
+			"success":       isSuccess,
+		},
+		time.Now(),
+	)
+	if err != nil {
+		return
+	}
+
+	p.writeLock.Lock()
+	p.points = append(p.points, pt)
+	p.writeLock.Unlock()
+	return
+}
+
+func (p *Plugin) writeResponse() {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database: "apex",
 	})
@@ -77,26 +109,12 @@ func writeResponse(qtype uint16, name string, responseTime int64, isSuccess bool
 		return
 	}
 
-	tags := map[string]string{
-		"qtype": string(qtype),
-		"name":  name,
+	p.writeLock.Lock()
+	for _, p := range p.points {
+		bp.AddPoint(p)
 	}
+	p.points = make([]*client.Point, 0)
+	p.writeLock.Unlock()
 
-	fields := map[string]interface{}{
-		"response_time": responseTime,
-		"success":       isSuccess,
-	}
-
-	pt, err := client.NewPoint(
-		"dns_query",
-		tags,
-		fields,
-		time.Now(),
-	)
-	if err != nil {
-		return
-	}
-	bp.AddPoint(pt)
-
-	return influxdbClient.Write(bp)
+	influxdbClient.Write(bp) // ignore error
 }
