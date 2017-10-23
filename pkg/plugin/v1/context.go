@@ -51,6 +51,7 @@ func (c *Context) MustRegisterPluginsOnce(chain PluginChain) {
 // Warmup func
 func (c *Context) Warmup() {
 	var i uint8
+
 	for ; i < c.chainLength; i++ {
 		c.pluginChain[i].Warmup(c)
 	}
@@ -69,6 +70,7 @@ func (c *Context) Patch() {
 // AfterResponse func
 func (c *Context) AfterResponse(responseError error) {
 	var i uint8
+
 	for ; i < c.chainLength; i++ {
 		c.pluginChain[i].AfterResponse(c, responseError)
 	}
