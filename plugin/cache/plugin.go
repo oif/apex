@@ -1,9 +1,8 @@
 package cache
 
 import (
+	ca "github.com/oif/apex/pkg/cache"
 	plugin "github.com/oif/apex/pkg/plugin/v1"
-
-	lru "github.com/hashicorp/golang-lru"
 )
 
 // PluginName for g.Name
@@ -21,7 +20,7 @@ func (p *Plugin) Name() string {
 
 // Initialize Google DNS Plugin
 func (p *Plugin) Initialize() (err error) {
-	cache, err = lru.New(p.CacheSize)
+	cache = ca.New(p.CacheSize)
 	return
 }
 
