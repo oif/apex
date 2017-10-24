@@ -63,19 +63,19 @@ func (p *Plugin) AfterResponse(c *plugin.Context, err error) {
 		"response_time": responseTime,
 	}).Info("Response time usage statistics")
 	// write influxdb
-	go func() {
+	go func(responseTime int64) {
 		err := p.pushResponsePoint(c.Msg.Question[0].Qtype, c.Msg.Question[0].Name, responseTime, !c.HasError())
 		if err != nil {
 
 		}
-	}()
+	}(responseTime)
 }
 
 // Patch the dns pakcage
 func (p *Plugin) Patch(c *plugin.Context) {}
 
 func makeNanoTimestamp() int64 {
-	return time.Now().UnixNano() / int64(time.Microsecond)
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 func (p *Plugin) pushResponsePoint(qtype uint16, name string, responseTime int64, isSuccess bool) (err error) {

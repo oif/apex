@@ -84,6 +84,13 @@ func (p *Plugin) Patch(c *plugin.Context) {
 		c.AbortWithError(errors.New(comment))
 		return
 	}
+	c.Msg.Rcode = response.Status
+	c.Msg.Truncated = response.Truncated
+	c.Msg.RecursionDesired = response.RecursionDesired
+	c.Msg.RecursionAvailable = response.RecursionAvailable
+	c.Msg.AuthenticatedData = response.AuthenticatedData
+	c.Msg.CheckingDisabled = response.CheckingDisabled
+	c.Msg.Response = true
 
 	for _, ans := range response.Answer {
 		// construct every response for dnsPack

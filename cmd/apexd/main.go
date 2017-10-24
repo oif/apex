@@ -1,7 +1,7 @@
 package main
 
 import (
-	inbound "github.com/oif/apex/pkg/engine/v1"
+	engine "github.com/oif/apex/pkg/engine/v1"
 	"github.com/oif/apex/plugin/cache"
 	"github.com/oif/apex/plugin/gdns"
 	"github.com/oif/apex/plugin/statistics"
@@ -11,7 +11,7 @@ import (
 
 func main() {
 	log.SetLevel(log.WarnLevel)
-	s := new(inbound.Server)
+	s := new(engine.Server)
 	s.ListenAddress = ":53"
 	s.ListenProtocol = []string{"udp"}
 	s.RegisterPlugins(func() *statistics.Plugin {
