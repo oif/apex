@@ -4,6 +4,7 @@ import (
 	engine "github.com/oif/apex/pkg/engine/v1"
 	"github.com/oif/apex/plugin/cache"
 	"github.com/oif/apex/plugin/gdns"
+	"github.com/oif/apex/plugin/mupstream"
 	"github.com/oif/apex/plugin/statistics"
 
 	log "github.com/Sirupsen/logrus"
@@ -21,7 +22,11 @@ func main() {
 	}())
 	s.RegisterPlugins(func() *cache.Plugin {
 		plugin := new(cache.Plugin)
-		plugin.CacheSize = 512
+		plugin.CacheSize = 1024
+		return plugin
+	}())
+	s.RegisterPlugins(func() *mupstream.Plugin {
+		plugin := new(mupstream.Plugin)
 		return plugin
 	}())
 	s.RegisterPlugins(func() *gdns.Plugin {

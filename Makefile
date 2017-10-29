@@ -7,4 +7,4 @@ build :
 clean :
 	rm *.coverprofile
 
-.PHONY: test build clean
+.PHONY: build clean
