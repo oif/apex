@@ -33,7 +33,7 @@ func (p *Plugin) Patch(c *plugin.Context) {
 	up := p.bestUpstream()
 	resp, rtt, err := up.forward(c.Msg)
 	if err != nil {
-		c.Error(err)
+		// c.Error(err)
 		return
 	}
 	resp.CopyTo(c.Msg)

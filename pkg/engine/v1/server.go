@@ -86,14 +86,15 @@ func (s *Server) ServeDNS(w dns.ResponseWriter, m *dns.Msg) {
 		goto RESPONSE
 	}
 
-	log.WithFields(log.Fields{
-		"req_id": reqID,
-		"name":   m.Question[0].Name,
-		"type":   m.Question[0].Qtype,
-	}).Debug("Receive request")
-
 	context = plugin.NewContext(w, m, reqID)
 	context.MustRegisterPluginsOnce(s.plugins)
+
+	log.WithFields(log.Fields{
+		"req_id":    reqID,
+		"name":      m.Question[0].Name,
+		"type":      m.Question[0].Qtype,
+		"client_ip": context.ClientIP(),
+	}).Debug("Receive request")
 
 	context.Warmup()
 	context.Patch()
