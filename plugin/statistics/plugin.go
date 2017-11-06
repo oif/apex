@@ -64,9 +64,12 @@ func (p *Plugin) AfterResponse(c *plugin.Context, err error) {
 	}).Info("Response time usage statistics")
 	// write influxdb
 	go func(responseTime int64) {
+		if len(c.Msg.Question) < 1 {
+			return
+		}
 		err := p.pushResponsePoint(c.Msg.Question[0].Qtype, c.Msg.Question[0].Name, responseTime, !c.HasError())
 		if err != nil {
-
+			logrus.Error(err)
 		}
 	}(responseTime)
 }
@@ -116,5 +119,8 @@ func (p *Plugin) writeResponse() {
 	p.points = make([]*client.Point, 0)
 	p.writeLock.Unlock()
 
-	influxdbClient.Write(bp) // ignore error
+	err = influxdbClient.Write(bp) // ignore error
+	if err != nil {
+		logrus.Error(err)
+	}
 }

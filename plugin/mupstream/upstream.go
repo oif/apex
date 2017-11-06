@@ -28,7 +28,7 @@ func newUpstream(addr string) *upstream {
 			Dialer: &net.Dialer{
 				KeepAlive: time.Minute,
 			},
-			Timeout: time.Second,
+			Timeout: 300 * time.Millisecond,
 		},
 	}
 }
