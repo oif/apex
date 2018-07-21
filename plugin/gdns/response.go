@@ -57,6 +57,11 @@ func (a Answer) ToRR() (rr dns.RR) {
 	// Currently support part of rr type only
 	// reuse code from github.com/oif/proton/gdns/response.go
 	switch a.Type {
+	case dns.TypeTXT:
+		rr = &dns.TXT{
+			Hdr: a.GetRRHeader(),
+			Txt: []string{a.Data},
+		}
 	case dns.TypeA:
 		rr = &dns.A{
 			Hdr: a.GetRRHeader(),
