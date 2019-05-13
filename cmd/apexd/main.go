@@ -5,19 +5,18 @@ import (
 	"github.com/oif/apex/plugin/cache"
 	"github.com/oif/apex/plugin/gdns"
 	"github.com/oif/apex/plugin/mupstream"
-	"github.com/oif/apex/plugin/statistics"
+	"github.com/oif/apex/plugin/ratelimit"
 
 	log "github.com/Sirupsen/logrus"
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
 	s := new(engine.Server)
 	s.ListenAddress = ":53"
 	s.ListenProtocol = []string{"udp"}
-	s.RegisterPlugins(func() *statistics.Plugin {
-		plugin := new(statistics.Plugin)
-		plugin.ConfigFilePath = "statistics.toml"
+	s.RegisterPlugins(func() *ratelimit.Plugin {
+		plugin := new(ratelimit.Plugin)
 		return plugin
 	}())
 	s.RegisterPlugins(func() *cache.Plugin {
