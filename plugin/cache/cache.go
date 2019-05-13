@@ -16,8 +16,9 @@ func key(m *dns.Msg, clientIP net.IP) uint64 {
 	if m.Truncated {
 		return 0
 	}
-
-	return hash(m.Question[0].Name, m.Question[0].Qtype, clientIP)
+	// IPv4 For /24 Block
+	ipBlock := clientIP[:len(clientIP)-1]
+	return hash(m.Question[0].Name, m.Question[0].Qtype, ipBlock)
 }
 
 func hash(qname string, qtype uint16, qip []byte) uint64 {
